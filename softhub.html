@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SoftHub — Portal de Downloads</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.6.0/dist/tabler-icons.min.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,sans-serif;background:#f4f4f2;color:#1a1a18;min-height:100vh}
+
+  /* NAV */
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#fff;border-bottom:1px solid #e5e5e0;position:sticky;top:0;z-index:10}
+  .nav-logo{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px;color:#1a1a18}
+  .nav-logo i{font-size:20px;color:#185fa5}
+  .nav-right{display:flex;align-items:center;gap:8px}
+  .badge-admin{font-size:11px;padding:3px 8px;border-radius:4px;background:#eeedfe;color:#3c3489;font-weight:500}
+  .hidden{display:none!important}
+
+  /* BUTTONS */
+  .btn{padding:6px 14px;border-radius:8px;border:1px solid #ccc;background:#fff;color:#1a1a18;cursor:pointer;font-size:13px;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:background .15s}
+  .btn:hover{background:#f0f0ee}
+  .btn.primary{background:#185fa5;color:#fff;border-color:transparent}
+  .btn.primary:hover{background:#0c447c}
+  .btn.danger{background:#fcebeb;color:#a32d2d;border-color:#f09595}
+  .btn.sm{padding:4px 10px;font-size:12px}
+
+  /* TABS */
+  .tabs{display:flex;gap:0;border-bottom:1px solid #e5e5e0;padding:0 20px;background:#fafaf8;overflow-x:auto}
+  .tab{padding:10px 16px;font-size:13px;cursor:pointer;color:#888;border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;align-items:center;gap:6px;transition:color .15s;white-space:nowrap}
+  .tab:hover{color:#1a1a18}
+  .tab.active{color:#185fa5;border-bottom-color:#185fa5;font-weight:500}
+
+  /* MAIN */
+  .main{padding:20px;max-width:1100px;margin:0 auto}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .section-title{font-size:15px;font-weight:600}
+  .count-badge{font-size:11px;padding:2px 7px;border-radius:10px;background:#e8e8e4;color:#666;border:1px solid #e0e0da}
+
+  /* GRID */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+  .card{background:#fff;border:1px solid #e5e5e0;border-radius:12px;padding:14px;cursor:pointer;transition:border-color .15s,transform .1s;position:relative}
+  .card:hover{border-color:#aaa;transform:translateY(-1px)}
+  .card.selected{border:2px solid #185fa5}
+  .card-check{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;background:#185fa5;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
+  .card.selected .card-check{opacity:1}
+  .card-check i{font-size:11px;color:white}
+  .card-icon{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:10px}
+  .card-name{font-size:13px;font-weight:500;margin-bottom:3px}
+  .cat-badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:500;margin-top:6px}
+
+  /* CATEGORY COLORS */
+  .cat-browser .card-icon{background:#e6f1fb}
+  .cat-browser .cat-badge{background:#e6f1fb;color:#0c447c}
+  .cat-media .card-icon{background:#faece7}
+  .cat-media .cat-badge{background:#faece7;color:#993c1d}
+  .cat-utility .card-icon{background:#eaf3de}
+  .cat-utility .cat-badge{background:#eaf3de;color:#27500a}
+  .cat-security .card-icon{background:#faeeda}
+  .cat-security .cat-badge{background:#faeeda;color:#633806}
+  .cat-dev .card-icon{background:#eeedfe}
+  .cat-dev .cat-badge{background:#eeedfe;color:#3c3489}
+
+  /* DOWNLOAD BAR */
+  .dl-bar{position:sticky;bottom:0;background:#fff;border-top:1px solid #e5e5e0;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .dl-apps{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+  .dl-tag{font-size:11px;padding:3px 8px;background:#e6f1fb;color:#185fa5;border-radius:4px;display:flex;align-items:center;gap:4px}
+  .dl-tag i{font-size:10px;cursor:pointer;opacity:.7}
+  .dl-tag i:hover{opacity:1}
+
+  /* ADMIN */
+  .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.admin-grid{grid-template-columns:1fr}}
+  .admin-card{background:#fff;border:1px solid #e5e5e0;border-radius:12px;padding:16px}
+  .admin-card h3{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px;color:#666}
+  .field{margin-bottom:10px}
+  .field label{font-size:12px;color:#666;display:block;margin-bottom:4px}
+  .field input,.field select{width:100%;padding:7px 10px;border:1px solid #ddd;border-radius:8px;background:#fafaf8;color:#1a1a18;font-size:13px;font-family:inherit;outline:none}
+  .field input:focus,.field select:focus{border-color:#185fa5;box-shadow:0 0 0 2px #e6f1fb}
+  .app-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0ee}
+  .app-row:last-child{border:none}
+  .app-row-icon{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+  .app-row-name{flex:1;font-size:13px;font-weight:500}
+  .app-row-cat{font-size:11px;color:#999}
+
+  /* LOGIN */
+  .login-wrap{display:flex;align-items:center;justify-content:center;min-height:500px;padding:20px}
+  .login-box{background:#fff;border:1px solid #e5e5e0;border-radius:12px;padding:28px;width:100%;max-width:320px}
+  .login-box h2{font-size:16px;font-weight:600;margin-bottom:4px}
+  .login-box p{font-size:13px;color:#999;margin-bottom:20px}
+  .login-error{font-size:12px;color:#a32d2d;margin-bottom:10px;padding:7px 10px;background:#fcebeb;border-radius:8px;display:none;align-items:center;gap:6px}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:80px;right:20px;background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px 14px;font-size:13px;display:flex;align-items:center;gap:8px;z-index:200;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+  .toast.show{opacity:1;transform:translateY(0)}
+  .toast i{color:#3b6d11;font-size:16px}
+
+  /* EMPTY */
+  .empty{text-align:center;padding:48px 20px;color:#aaa}
+  .empty i{font-size:36px;display:block;margin-bottom:10px}
+  .empty p{font-size:13px}
+
+  /* STATS */
+  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+  .stat{background:#f4f4f2;border-radius:8px;padding:12px;text-align:center}
+  .stat-n{font-size:22px;font-weight:600}
+  .stat-l{font-size:11px;color:#999;margin-top:2px}
+
+  /* ADMIN LIST SCROLL */
+  #admin-list{max-height:400px;overflow-y:auto}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- NAVBAR -->
+  <div class="nav">
+    <div class="nav-logo"><i class="ti ti-package"></i> SoftHub</div>
+    <div class="nav-right">
+      <span class="badge-admin hidden" id="admin-badge">Admin</span>
+      <button class="btn sm" id="admin-btn" onclick="toggleAdmin()">
+        <i class="ti ti-lock" id="admin-icon"></i>
+        <span id="admin-btn-text">Admin</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- PUBLIC VIEW -->
+  <div id="view-public">
+    <div class="tabs">
+      <div class="tab active" onclick="filterCat('all',this)"><i class="ti ti-apps"></i> Todos</div>
+      <div class="tab" onclick="filterCat('browser',this)"><i class="ti ti-world"></i> Browser</div>
+      <div class="tab" onclick="filterCat('media',this)"><i class="ti ti-movie"></i> Média</div>
+      <div class="tab" onclick="filterCat('utility',this)"><i class="ti ti-tool"></i> Utilitários</div>
+      <div class="tab" onclick="filterCat('security',this)"><i class="ti ti-shield"></i> Segurança</div>
+      <div class="tab" onclick="filterCat('dev',this)"><i class="ti ti-code"></i> Dev</div>
+    </div>
+    <div class="main">
+      <div class="section-header">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="section-title">Softwares disponíveis</span>
+          <span class="count-badge" id="count-badge">0</span>
+        </div>
+        <span style="font-size:12px;color:#999">Clica nos apps para selecionar</span>
+      </div>
+      <div class="grid" id="grid"></div>
+    </div>
+    <div class="dl-bar hidden" id="dl-bar">
+      <div class="dl-apps" id="dl-apps"></div>
+      <button class="btn primary" onclick="downloadSelected()">
+        <i class="ti ti-download"></i> Baixar selecionados (<span id="dl-count">0</span>)
+      </button>
+    </div>
+  </div>
+
+  <!-- ADMIN VIEW -->
+  <div id="view-admin" class="hidden">
+    <div class="main">
+      <div class="stat-row">
+        <div class="stat"><div class="stat-n" id="stat-total">0</div><div class="stat-l">softwares</div></div>
+        <div class="stat"><div class="stat-n" id="stat-cats">0</div><div class="stat-l">categorias</div></div>
+        <div class="stat"><div class="stat-n" id="stat-dl">0</div><div class="stat-l">downloads</div></div>
+      </div>
+      <div class="admin-grid">
+        <div class="admin-card">
+          <h3><i class="ti ti-plus"></i> Adicionar software</h3>
+          <div class="field"><label>Nome</label><input type="text" id="f-name" placeholder="ex: Google Chrome"></div>
+          <div class="field"><label>Emoji / ícone</label><input type="text" id="f-icon" placeholder="ex: 🌐" maxlength="4"></div>
+          <div class="field">
+            <label>Categoria</label>
+            <select id="f-cat">
+              <option value="browser">Browser</option>
+              <option value="media">Média</option>
+              <option value="utility">Utilitários</option>
+              <option value="security">Segurança</option>
+              <option value="dev">Dev</option>
+            </select>
+          </div>
+          <div class="field"><label>URL de download</label><input type="text" id="f-url" placeholder="https://..."></div>
+          <button class="btn primary" onclick="addApp()" style="width:100%"><i class="ti ti-plus"></i> Adicionar</button>
+        </div>
+        <div class="admin-card">
+          <h3><i class="ti ti-list"></i> Softwares (<span id="admin-count">0</span>)</h3>
+          <div id="admin-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN VIEW -->
+  <div id="view-login" class="hidden">
+    <div class="login-wrap">
+      <div class="login-box">
+        <h2>Acesso admin</h2>
+        <p>Introduz a senha para gerir os softwares.</p>
+        <div class="login-error" id="login-error"><i class="ti ti-alert-circle"></i> Senha incorreta</div>
+        <div class="field">
+          <label>Senha</label>
+          <input type="password" id="pwd-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+        <button class="btn primary" onclick="doLogin()" style="width:100%;margin-top:4px">Entrar</button>
+        <button class="btn" onclick="showPublic()" style="width:100%;margin-top:8px">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><i class="ti ti-circle-check"></i> <span id="toast-msg"></span></div>
+
+<script>
+  /* ============================================================
+     CONFIGURAÇÃO — altera aqui a senha de admin
+     ============================================================ */
+  const ADMIN_PWD = "admin123";
+
+  /* ============================================================
+     DADOS INICIAIS (softwares de exemplo)
+     ============================================================ */
+  const defaultApps = [
+    {id:1, name:"Google Chrome",    icon:"🌐", cat:"browser",  url:"https://www.google.com/chrome/"},
+    {id:2, name:"Mozilla Firefox",  icon:"🦊", cat:"browser",  url:"https://www.mozilla.org/firefox/"},
+    {id:3, name:"VLC Media Player", icon:"🎬", cat:"media",    url:"https://www.videolan.org/vlc/"},
+    {id:4, name:"7-Zip",            icon:"🗜️", cat:"utility",  url:"https://www.7-zip.org/"},
+    {id:5, name:"Avast Antivirus",  icon:"🛡️", cat:"security", url:"https://www.avast.com/"},
+    {id:6, name:"VS Code",          icon:"💻", cat:"dev",      url:"https://code.visualstudio.com/"},
+    {id:7, name:"Spotify",          icon:"🎵", cat:"media",    url:"https://www.spotify.com/"},
+    {id:8, name:"Notepad++",        icon:"📝", cat:"utility",  url:"https://notepad-plus-plus.org/"},
+  ];
+
+  /* ============================================================
+     ESTADO
+     ============================================================ */
+  let isAdmin = false;
+  let selected = new Set();
+  let currentCat = "all";
+  let dlCount = 0;
+  let nextId = 9;
+
+  // Carrega apps do localStorage (persiste entre sessões)
+  function loadApps() {
+    try {
+      const saved = localStorage.getItem("softhub-apps");
+      if (saved) {
+        const data = JSON.parse(saved);
+        apps = data.apps;
+        nextId = data.nextId;
+      } else {
+        apps = [...defaultApps];
+      }
+    } catch(e) {
+      apps = [...defaultApps];
+    }
+  }
+
+  function saveApps() {
+    try {
+      localStorage.setItem("softhub-apps", JSON.stringify({apps, nextId}));
+    } catch(e) {}
+  }
+
+  let apps = [];
+
+  /* ============================================================
+     UTILITÁRIOS
+     ============================================================ */
+  function getCatLabel(c) {
+    return {browser:"Browser", media:"Média", utility:"Utilitários", security:"Segurança", dev:"Dev"}[c] || c;
+  }
+
+  function toast(msg) {
+    const t = document.getElementById("toast");
+    document.getElementById("toast-msg").textContent = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2800);
+  }
+
+  /* ============================================================
+     VISTA PÚBLICA
+     ============================================================ */
+  function renderGrid() {
+    const grid = document.getElementById("grid");
+    const filtered = currentCat === "all" ? apps : apps.filter(a => a.cat === currentCat);
+    document.getElementById("count-badge").textContent = filtered.length;
+
+    if (!filtered.length) {
+      grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><i class="ti ti-package-off"></i><p>Nenhum software nesta categoria.</p></div>';
+      renderDlBar();
+      return;
+    }
+
+    grid.innerHTML = filtered.map(a => `
+      <div class="card cat-${a.cat}${selected.has(a.id) ? " selected" : ""}" onclick="toggleSelect(${a.id})">
+        <div class="card-check"><i class="ti ti-check"></i></div>
+        <div class="card-icon">${a.icon}</div>
+        <div class="card-name">${a.name}</div>
+        <span class="cat-badge">${getCatLabel(a.cat)}</span>
+      </div>
+    `).join("");
+
+    renderDlBar();
+  }
+
+  function renderDlBar() {
+    const bar = document.getElementById("dl-bar");
+    const appsDiv = document.getElementById("dl-apps");
+    const cnt = document.getElementById("dl-count");
+
+    if (selected.size === 0) {
+      bar.classList.add("hidden");
+      return;
+    }
+
+    bar.classList.remove("hidden");
+    cnt.textContent = selected.size;
+    const names = [...selected].map(id => apps.find(a => a.id === id)).filter(Boolean);
+    appsDiv.innerHTML = names.map(a =>
+      `<span class="dl-tag">${a.name}<i class="ti ti-x" onclick="toggleSelect(${a.id});event.stopPropagation()"></i></span>`
+    ).join("");
+  }
+
+  function toggleSelect(id) {
+    if (selected.has(id)) selected.delete(id);
+    else selected.add(id);
+    renderGrid();
+  }
+
+  function filterCat(cat, el) {
+    currentCat = cat;
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    el.classList.add("active");
+    renderGrid();
+  }
+
+  function downloadSelected() {
+    const sel = [...selected].map(id => apps.find(a => a.id === id)).filter(Boolean);
+    if (!sel.length) return;
+    dlCount += sel.length;
+    document.getElementById("stat-dl").textContent = dlCount;
+    sel.forEach(a => window.open(a.url, "_blank"));
+    selected.clear();
+    renderGrid();
+    toast("Download iniciado para " + sel.length + " app(s)!");
+  }
+
+  /* ============================================================
+     PAINEL ADMIN
+     ============================================================ */
+  function renderAdminList() {
+    const list = document.getElementById("admin-list");
+    document.getElementById("admin-count").textContent = apps.length;
+    document.getElementById("stat-total").textContent = apps.length;
+    document.getElementById("stat-cats").textContent = new Set(apps.map(a => a.cat)).size;
+    document.getElementById("stat-dl").textContent = dlCount;
+
+    if (!apps.length) {
+      list.innerHTML = '<div class="empty"><i class="ti ti-inbox"></i><p>Nenhum software adicionado.</p></div>';
+      return;
+    }
+
+    list.innerHTML = apps.map(a => `
+      <div class="app-row">
+        <div class="app-row-icon cat-${a.cat}" style="font-size:16px">${a.icon}</div>
+        <div style="flex:1;min-width:0">
+          <div class="app-row-name">${a.name}</div>
+          <div class="app-row-cat">${getCatLabel(a.cat)}</div>
+        </div>
+        <div>
+          <button class="btn sm danger" onclick="deleteApp(${a.id})"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function addApp() {
+    const name = document.getElementById("f-name").value.trim();
+    const icon = document.getElementById("f-icon").value.trim() || "📦";
+    const cat  = document.getElementById("f-cat").value;
+    const url  = document.getElementById("f-url").value.trim();
+
+    if (!name) { document.getElementById("f-name").focus(); return; }
+    if (!url)  { document.getElementById("f-url").focus(); return; }
+
+    apps.push({id: nextId++, name, icon, cat, url});
+    saveApps();
+
+    document.getElementById("f-name").value = "";
+    document.getElementById("f-icon").value = "";
+    document.getElementById("f-url").value  = "";
+
+    renderAdminList();
+    toast("Software adicionado!");
+  }
+
+  function deleteApp(id) {
+    if (!confirm("Remover este software?")) return;
+    apps = apps.filter(a => a.id !== id);
+    selected.delete(id);
+    saveApps();
+    renderAdminList();
+    renderGrid();
+    toast("Software removido.");
+  }
+
+  /* ============================================================
+     AUTENTICAÇÃO
+     ============================================================ */
+  function toggleAdmin() {
+    if (isAdmin) logoutAdmin();
+    else showLogin();
+  }
+
+  function showLogin() {
+    document.getElementById("view-public").classList.add("hidden");
+    document.getElementById("view-admin").classList.add("hidden");
+    document.getElementById("view-login").classList.remove("hidden");
+    document.getElementById("login-error").style.display = "none";
+    document.getElementById("pwd-input").value = "";
+    setTimeout(() => document.getElementById("pwd-input").focus(), 100);
+  }
+
+  function doLogin() {
+    const pwd = document.getElementById("pwd-input").value;
+    if (pwd === ADMIN_PWD) {
+      isAdmin = true;
+      document.getElementById("admin-badge").classList.remove("hidden");
+      document.getElementById("admin-btn-text").textContent = "Sair";
+      document.getElementById("admin-icon").className = "ti ti-logout";
+      document.getElementById("view-login").classList.add("hidden");
+      document.getElementById("view-public").classList.add("hidden");
+      document.getElementById("view-admin").classList.remove("hidden");
+      renderAdminList();
+      toast("Bem-vindo ao painel admin!");
+    } else {
+      const err = document.getElementById("login-error");
+      err.style.display = "flex";
+      document.getElementById("pwd-input").value = "";
+      document.getElementById("pwd-input").focus();
+    }
+  }
+
+  function logoutAdmin() {
+    isAdmin = false;
+    document.getElementById("admin-badge").classList.add("hidden");
+    document.getElementById("admin-btn-text").textContent = "Admin";
+    document.getElementById("admin-icon").className = "ti ti-lock";
+    showPublic();
+    toast("Sessão terminada.");
+  }
+
+  function showPublic() {
+    document.getElementById("view-public").classList.remove("hidden");
+    document.getElementById("view-admin").classList.add("hidden");
+    document.getElementById("view-login").classList.add("hidden");
+  }
+
+  /* ============================================================
+     INIT
+     ============================================================ */
+  loadApps();
+  renderGrid();
+</script>
+</body>
+</html>
